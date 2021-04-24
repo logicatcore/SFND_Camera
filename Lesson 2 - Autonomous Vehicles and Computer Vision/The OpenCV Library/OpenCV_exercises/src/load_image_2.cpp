@@ -9,6 +9,10 @@ using namespace std;
 
 void loadImage2()
 {
+    string windowName = "First steps in OpenCV";
+    cv::Mat img;
+    cv::namedWindow(windowName, 1); // create window
+
     for (int i = 5; i <= 9; i++)
     {
 
@@ -18,10 +22,7 @@ void loadImage2()
         string filename = "../images/img" + imgNumber.str() + ".png";
 
         // load and display image
-        cv::Mat img;
         img = cv::imread(filename);
-        string windowName = "First steps in OpenCV";
-        cv::namedWindow(windowName, 1); // create window
         cv::imshow(windowName, img);
         cv::waitKey(0); // wait for keyboard input before continuing
     }
