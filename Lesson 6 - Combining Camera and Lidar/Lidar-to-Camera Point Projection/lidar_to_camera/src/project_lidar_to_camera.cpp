@@ -47,22 +47,36 @@ void projectLidarToCamera2()
 
     cv::Mat X(4,1,cv::DataType<double>::type);
     cv::Mat Y(3,1,cv::DataType<double>::type);
+    float maxX = 25.0, maxY = 6.0, minZ = -1.4; 
+    float maxVal = 20.0;
+    cv::Point pt;
+    int g, r;
 
     // TODO
     for(auto it=lidarPoints.begin(); it!=lidarPoints.end(); ++it) {
-        // 1. Convert current Lidar point into homogeneous coordinates and store it in the 4D variable X.
+        if(it->x > maxX || it->x < 0.0 || abs(it->y) > maxY || it->z < minZ || it->r<0.01 )
+        {
+            continue;
+        }
+        else{   // 1. Convert current Lidar point into homogeneous coordinates and store it in the 4D variable X.
+            X.at<double>(0,0) = it->x;
+            X.at<double>(1,0) = it->y;
+            X.at<double>(2,0) = it->z;
+            X.at<double>(3,0) = 1;
+            // 2. Then, apply the projection equation as detailed in lesson 5.1 to map X onto the image plane of the camera. 
+            // Store the result in Y.
+            Y = P_rect_00 * R_rect_00 * RT * X;
+            // 3. Once this is done, transform Y back into Euclidean coordinates and store the result in the variable pt.
 
-        // 2. Then, apply the projection equation as detailed in lesson 5.1 to map X onto the image plane of the camera. 
-        // Store the result in Y.
+            pt.x = Y.at<double>(0,0) / Y.at<double>(2,0);
+            pt.y = Y.at<double>(1,0) / Y.at<double>(2,0);
+            // pt.z = Y.at<double>(2,0) / Y.at<double>(3,0);
 
-        // 3. Once this is done, transform Y back into Euclidean coordinates and store the result in the variable pt.
-        cv::Point pt;
-
-        float val = it->x;
-        float maxVal = 20.0;
-        int red = min(255, (int)(255 * abs((val - maxVal) / maxVal)));
-        int green = min(255, (int)(255 * (1 - abs((val - maxVal) / maxVal))));
-        cv::circle(overlay, pt, 5, cv::Scalar(0, green, red), -1);
+            // measurements on the obstacles in the scene.
+            g = min(255, (int)(255 * abs(it->x/maxVal)));
+            r = min(255, (int)(255 * (1 - abs(it->x/maxVal))));
+            cv::circle(overlay, pt, 5, cv::Scalar(0, g, r), -1);
+        }
     }
 
     float opacity = 0.6;
